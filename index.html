@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FactureDevAI</title>
+  <style>
+    body { font-family: Arial; margin: 2em; background: #f4f4f4; }
+    textarea, input, button { width: 100%; margin-top: 1em; padding: 0.5em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #999; padding: 0.5em; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>🧾 FactureDevAI - Prototype</h1>
+  <button onclick="startDictation()">🎤 Dicter un devis</button>
+  <textarea id="output" rows="4" placeholder="Texte dicté ici..."></textarea>
+  <button onclick="generateTable()">🧱 Générer le devis</button>
+  <div id="devisTable"></div>
+
+  <script>
+    function startDictation() {
+      const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'fr-FR';
+      recognition.onresult = function(event) {
+        document.getElementById('output').value = event.results[0][0].transcript;
+      };
+      recognition.start();
+    }
+
+    function generateTable() {
+      const text = document.getElementById('output').value.toLowerCase();
+      const tableData = parseDevis(text);
+      if (!tableData.length) return;
+
+      let html = '<table><tr><th>Description</th><th>Qté</th><th>PU €</th><th>Total €</th></tr>';
+      tableData.forEach(row => {
+        html += `<tr><td>${row.desc}</td><td>${row.qty}</td><td>${row.unit}</td><td>${row.total}</td></tr>`;
+      });
+      html += '</table>';
+      document.getElementById('devisTable').innerHTML = html;
+    }
+
+    function parseDevis(text) {
+      const exemples = [
+        { keywords: ['robinet', 'mitijor'], desc: 'Remplacement robinet mitigeur', qty: 1, unit: 80 },
+        { keywords: ['tuyau', 'pvc'], desc: 'Pose tuyau PVC', qty: 2, unit: 50 },
+        { keywords: ['toilette'], desc: 'Installation toilette', qty: 1, unit: 120 }
+      ];
+      return exemples.filter(e =>
+        e.keywords.some(k => text.includes(k))
+      ).map(e => ({ ...e, total: e.unit * e.qty }));
+    }
+  </script>
+</body>
+</html>
