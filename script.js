@@ -1,21 +1,44 @@
-
-let recording = false;
+let recognition;
 let finalTranscript = "";
+let recording = false;
 
-document.getElementById("recordBtn").onclick = async () => {
+if (!('webkitSpeechRecognition' in window)) {
+    alert("La reconnaissance vocale n'est pas supportée par ce navigateur. Utilise Google Chrome.");
+} else {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "fr-FR";
+
+    recognition.onstart = () => {
+        console.log("🎙️ Enregistrement...");
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Erreur reco:", event.error);
+    };
+
+    recognition.onend = () => {
+        recording = false;
+        document.getElementById("recordBtn").innerText = "🎤 Dicter un devis";
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        finalTranscript += (finalTranscript ? "\n" : "") + transcript;
+        document.getElementById("output").innerText = finalTranscript;
+    };
+}
+
+document.getElementById("recordBtn").onclick = () => {
     if (!recording) {
         recording = true;
         document.getElementById("recordBtn").innerText = "⏹️ Stop";
-        finalTranscript += " [dictée en cours...]";
-        document.getElementById("output").innerText = finalTranscript;
-        // Simulation de dictée
-        setTimeout(() => {
-            const simulated = "Remplacement robinet avec mitigeur, pose lavabo 1 unité 120 euros";
-            finalTranscript = finalTranscript.replace(" [dictée en cours...]", "") + "\n" + simulated;
-            document.getElementById("output").innerText = finalTranscript;
-            document.getElementById("recordBtn").innerText = "🎤 Dicter un devis";
-            recording = false;
-        }, 3000);
+        recognition.start();
+    } else {
+        recognition.stop();
+        recording = false;
+        document.getElementById("recordBtn").innerText = "🎤 Dicter un devis";
     }
 };
 
