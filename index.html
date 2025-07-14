@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>BatiProAI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        header img {
+            height: 60px;
+            margin-right: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        #output, #devisTable {
+            margin-top: 20px;
+            background: #fff;
+            padding: 10px;
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #fff;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #aaa;
+            text-align: left;
+        }
+        .actions button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="assets/logo.png" alt="BatiProAI Logo">
+        <h1>BatiProAI</h1>
+    </header>
+    <button id="recordBtn">🎤 Dicter un devis</button>
+    <label for="tvaSelect">TVA :</label>
+    <select id="tvaSelect">
+      <option value="0.1">10%</option>
+      <option value="0.2" selected>20%</option>
+    </select>
+    <button id="generateBtn">📄 Générer le devis</button>
+
+    <div id="output"></div>
+    <div id="devisTable"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
