@@ -1,3 +1,4 @@
+
 let recognition;
 let finalTranscript = "";
 let recording = false;
@@ -25,7 +26,7 @@ if (!('webkitSpeechRecognition' in window)) {
 
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        finalTranscript += (finalTranscript ? "\\n" : "") + transcript;
+        finalTranscript += (finalTranscript ? "\n" : "") + transcript;
         document.getElementById("output").innerText = finalTranscript;
     };
 }
