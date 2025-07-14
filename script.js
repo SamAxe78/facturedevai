@@ -1,84 +1,60 @@
-
+let isRecording = false;
 let recognition;
-let finalTranscript = "";
-let recording = false;
+let transcription = "";
 
-if (!('webkitSpeechRecognition' in window)) {
-    alert("La reconnaissance vocale n'est pas supportée par ce navigateur. Utilise Google Chrome.");
-} else {
+if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = "fr-FR";
 
-    recognition.onstart = () => {
-        console.log("🎙️ Enregistrement...");
+    recognition.onresult = function(event) {
+        const lastResult = event.results[event.results.length - 1][0].transcript;
+        transcription += lastResult + ". ";
+        document.getElementById("output").textContent = transcription;
     };
 
-    recognition.onerror = (event) => {
-        console.error("Erreur reco:", event.error);
-    };
-
-    recognition.onend = () => {
-        recording = false;
-        document.getElementById("recordBtn").innerText = "🎤 Dicter un devis";
-    };
-
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        finalTranscript += (finalTranscript ? "\n" : "") + transcript;
-        document.getElementById("output").innerText = finalTranscript;
+    recognition.onerror = function(event) {
+        alert("Erreur lors de la reconnaissance vocale : " + event.error);
     };
 }
 
-document.getElementById("recordBtn").onclick = () => {
-    if (!recording) {
-        recording = true;
-        document.getElementById("recordBtn").innerText = "⏹️ Stop";
+document.getElementById("recordBtn").addEventListener("click", () => {
+    if (!recognition) return alert("Reconnaissance vocale non supportée");
+
+    if (!isRecording) {
+        transcription += ""; // Ne rien effacer
         recognition.start();
+        isRecording = true;
+        document.getElementById("recordBtn").textContent = "⏹️ Arrêter l'enregistrement";
     } else {
         recognition.stop();
-        recording = false;
-        document.getElementById("recordBtn").innerText = "🎤 Dicter un devis";
+        isRecording = false;
+        document.getElementById("recordBtn").textContent = "🎤 Dicter un devis";
     }
-};
+});
 
-document.getElementById("generateBtn").onclick = () => {
-    const text = finalTranscript;
-    if (!text.trim()) return;
-
-    const items = text.split(",").map(item => {
-        return {
-            designation: item.trim(),
-            quantite: 1,
-            unite: "u",
-            prix: 100,
-            total: 100
-        };
-    });
-
+document.getElementById("generateBtn").addEventListener("click", () => {
+    const lines = transcription.split(".").map(line => line.trim()).filter(Boolean);
+    let tableHTML = "<table><tr><th>Description</th><th>Qté</th><th>Unité</th><th>PU HT</th><th>Total HT</th></tr>";
     let totalHT = 0;
-    let html = "<table><tr><th>Désignation</th><th>Qté</th><th>Unité</th><th>PU HT (€)</th><th>Total HT (€)</th></tr>";
 
-    items.forEach(i => {
-        totalHT += i.total;
-        html += `<tr>
-            <td>${i.designation}</td>
-            <td>${i.quantite}</td>
-            <td>${i.unite}</td>
-            <td>${i.prix.toFixed(2)}</td>
-            <td>${i.total.toFixed(2)}</td>
-        </tr>`;
+    lines.forEach((line, i) => {
+        const pu = 100;  // Prix unitaire fictif
+        const qty = 1;
+        const total = qty * pu;
+        totalHT += total;
+        tableHTML += `<tr><td>${line}</td><td>${qty}</td><td>u</td><td>${pu}€</td><td>${total}€</td></tr>`;
     });
 
     const tvaRate = parseFloat(document.getElementById("tvaSelect").value);
-    const montantTVA = totalHT * tvaRate;
-    const totalTTC = totalHT + montantTVA;
+    const tvaAmount = totalHT * tvaRate;
+    const totalTTC = totalHT + tvaAmount;
 
-    html += `</table><br/>
-        <p><strong>Total HT :</strong> ${totalHT.toFixed(2)} €</p>
-        <p><strong>TVA (${tvaRate * 100}%) :</strong> ${montantTVA.toFixed(2)} €</p>
-        <p><strong>Total TTC :</strong> ${totalTTC.toFixed(2)} €</p>`;
+    tableHTML += `</table>
+        <p>Total HT : ${totalHT.toFixed(2)} €</p>
+        <p>TVA (${tvaRate * 100}%) : ${tvaAmount.toFixed(2)} €</p>
+        <p><strong>Total TTC : ${totalTTC.toFixed(2)} €</strong></p>`;
 
-    document.getElementById("devisTable").innerHTML = html;
-};
+    document.getElementById("devisTable").innerHTML = tableHTML;
+});
