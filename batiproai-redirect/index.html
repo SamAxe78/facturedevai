@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirection BatiProAI</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <p>Redirection vers l'application...</p>
+    <script>
+        // Extraire le token depuis l'URL Supabase
+        const urlParams = new URLSearchParams(window.location.search);
+        const fragment = window.location.hash.substring(1);
+        const fragmentParams = new URLSearchParams(fragment);
+        
+        const token = fragmentParams.get('access_token') || urlParams.get('access_token');
+        
+        if (token) {
+            // Redirection immédiate vers votre app Expo
+            const appUrl = `exp://192.168.1.38:8081/reset-password?token=${token}`;
+            console.log('Redirection vers:', appUrl);
+            window.location = appUrl;
+        } else {
+            document.body.innerHTML = '<p>Token manquant dans l\'URL</p>';
+        }
+    </script>
+</body>
+</html>
